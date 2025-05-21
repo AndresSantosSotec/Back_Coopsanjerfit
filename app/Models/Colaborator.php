@@ -41,4 +41,14 @@ class Colaborator extends Model
     {
         return $this->photo_path ? Storage::url($this->photo_path) : null;
     }
+    
+    public function fitcoinAccount()
+    {
+        return $this->hasOne(FitcoinAccount::class);
+    }
+
+    public function fitcoinTransactions()
+    {
+        return $this->hasMany(FitcoinTransaction::class);
+    }
 }

@@ -2,35 +2,84 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+/** 
+ * WebAdmin Controllers 
+ */
 use App\Http\Controllers\Api\WebAdmin\UserController;
 use App\Http\Controllers\Api\WebAdmin\RoleController;
-use App\Http\Controllers\Api\WebAdmin\ColaboratorController;  // ← añade esto
+use App\Http\Controllers\Api\WebAdmin\ColaboratorController;
+use App\Http\Controllers\Api\WebAdmin\FitcoinAccountController;
+use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
 
-// Login público
-Route::post('/login', [UserController::class, 'login']);
+/** 
+ * AppMobile Controllers 
+ */
+use App\Http\Controllers\Api\AppMobile\AuthController;
+use App\Http\Controllers\Api\AppMobile\ActivityController;
 
-// Logout (requiere token válido)
-Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
-// Rutas protegidas
-Route::middleware('auth:sanctum')->group(function () {
-    // Obtener info del usuario logueado
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+// WebAdmin login (generates token)
+Route::post('login', [UserController::class, 'login']);
 
-    // Módulo WebAdmin
-    Route::prefix('webadmin')->group(function () {
-        Route::apiResource('roles', RoleController::class);
-        Route::apiResource('users', UserController::class);
-        Route::apiResource('colaborators', ColaboratorController::class);  // ← y esto
-    });
-});
-
-// Ping público
-Route::get('/ping', function () {
+// Ping
+Route::get('ping', function () {
     return response()->json([
         'message' => 'pong',
         'status'  => 'success',
     ]);
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| WebAdmin (protected by sanctum)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
+    // user info
+    Route::get('user', function(Request $request) {
+        return $request->user();
+    });
+
+    // CRUD: roles, users, colaborators
+    Route::apiResource('roles',       RoleController::class);
+    Route::apiResource('users',       UserController::class);
+    Route::apiResource('colaborators',ColaboratorController::class);
+
+    // Fitcoin accounts & transactions
+    Route::get( 'fitcoin/accounts',                    [FitcoinAccountController::class,     'index']);
+    Route::get( 'fitcoin/accounts/{colaborator}',      [FitcoinAccountController::class,     'show']);
+    Route::get( 'fitcoin/accounts/{colaborator}/txns', [FitcoinTransactionController::class, 'index']);
+    Route::post('fitcoin/accounts/{colaborator}/txns', [FitcoinTransactionController::class, 'store']);
+
+    // WebAdmin logout
+    Route::post('logout', [UserController::class, 'logout']);
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| AppMobile (prefix "app")
+|--------------------------------------------------------------------------
+*/
+Route::prefix('app')->group(function () {
+    // Public
+    Route::post('login',  [AuthController::class, 'login']);
+
+    // Protected
+    Route::middleware('auth:sanctum')->group(function () {
+        // Current user
+        Route::get('user',   [AuthController::class, 'user']);
+        // Logout
+        Route::post('logout',[AuthController::class, 'logout']);
+        // Activities
+        Route::get( 'activities', [ActivityController::class, 'index']);
+        Route::post('activities', [ActivityController::class, 'store']);
+    });
 });

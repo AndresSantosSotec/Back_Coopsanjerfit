@@ -47,5 +47,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Colaborator::class);
     }
+
+        public function activities()
+    {
+        // Ajusta App\Models\Activity al namespace correcto de tu modelo de actividad
+        return $this->hasMany(Activity::class);
+    }
     
 }
