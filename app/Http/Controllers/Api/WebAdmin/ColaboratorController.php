@@ -5,21 +5,27 @@ namespace App\Http\Controllers\Api\WebAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Colaborator;
 use App\Models\User;
+use App\Models\FitcoinAccount;          // ✅ nuevo
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class ColaboratorController extends Controller
 {
-    // 1. Listar todos los colaboradores con su usuario relacionado
+    /* ---------------------------------------------------------------------
+     | 1. Listar colaboradores (incluye saldo de Fitcoins)
+     * --------------------------------------------------------------------*/
     public function index()
     {
-        // photo_url vendrá junto al modelo gracias al $appends en el modelo
-        $colaborators = Colaborator::with('user')->get();
+        // Traemos la relación fitcoinAccount para que se calcule coin_fits
+        $colaborators = Colaborator::with(['user', 'fitcoinAccount'])->get();
+
         return response()->json($colaborators);
     }
 
-    // 2. Crear un nuevo colaborador + generar su usuario “Colaborador”
+    /* ---------------------------------------------------------------------
+     | 2. Crear colaborador + usuario + cuenta de Fitcoins
+     * --------------------------------------------------------------------*/
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -43,16 +49,16 @@ class ColaboratorController extends Controller
             'photo'                => 'nullable|image|mimes:jpeg,png|max:2048',
         ]);
 
-        // 1) Crear Usuario
+        /* 1) Crear usuario */
         $user = User::create([
             'name'     => $data['nombre'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id'  => 4, // rol Colaborador
+            'role_id'  => 4,   // Rol “Colaborador”
             'status'   => 'Activo',
         ]);
 
-        // 2) Preparar y crear Colaborador
+        /* 2) Crear colaborador */
         $colData = [
             'user_id'              => $user->id,
             'nombre'               => $data['nombre'],
@@ -76,19 +82,29 @@ class ColaboratorController extends Controller
         }
 
         $colaborator = Colaborator::create($colData);
-        $colaborator->load('user');
+
+        /* 3) Crear cuenta de Fitcoins con balance 0 (si no existe) */
+        $colaborator->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+
+        // Cargamos relaciones para la respuesta
+        $colaborator->load(['user', 'fitcoinAccount']);
 
         return response()->json($colaborator, 201);
     }
 
-    // 3. Mostrar un colaborador en particular
+    /* ---------------------------------------------------------------------
+     | 3. Mostrar colaborador individual (con saldo de Fitcoins)
+     * --------------------------------------------------------------------*/
     public function show(Colaborator $colaborator)
     {
-        $colaborator->load('user');
+        $colaborator->load(['user', 'fitcoinAccount']);
+
         return response()->json($colaborator);
     }
 
-    // 4. Actualizar un colaborador existente
+    /* ---------------------------------------------------------------------
+     | 4. Actualizar colaborador
+     * --------------------------------------------------------------------*/
     public function update(Request $request, Colaborator $colaborator)
     {
         $data = $request->validate([
@@ -117,17 +133,26 @@ class ColaboratorController extends Controller
         }
 
         $colaborator->update($data);
-        $colaborator->load('user');
+
+        // Aseguramos que siempre exista cuenta de fitcoins
+        $colaborator->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+
+        $colaborator->load(['user', 'fitcoinAccount']);
 
         return response()->json($colaborator);
     }
 
-    // 5. Eliminar un colaborador
+    /* ---------------------------------------------------------------------
+     | 5. Eliminar colaborador
+     * --------------------------------------------------------------------*/
     public function destroy(Colaborator $colaborator)
     {
         if ($colaborator->photo_path) {
             Storage::disk('public')->delete($colaborator->photo_path);
         }
+
+        // Al eliminar colaborador también se elimina su cuenta de Fitcoins
+        $colaborator->fitcoinAccount()->delete();
         $colaborator->delete();
 
         return response()->json(null, 204);

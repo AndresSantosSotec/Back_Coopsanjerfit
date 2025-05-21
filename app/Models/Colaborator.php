@@ -10,6 +10,11 @@ class Colaborator extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | ATRIBUTOS
+    |--------------------------------------------------------------------------
+    */
     protected $fillable = [
         'user_id',
         'nombre',
@@ -28,27 +33,52 @@ class Colaborator extends Model
         'photo_path',
     ];
 
-    protected $appends = ['photo_url'];
+    /**  Estos campos virtuales aparecerán en la respuesta JSON */
+    protected $appends = ['photo_url', 'coin_fits'];
 
-    // Un colaborador pertenece a un usuario
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONES
+    |--------------------------------------------------------------------------
+    */
+
+    /** Relación con el usuario del sistema */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Accessor for photo_url
-    public function getPhotoUrlAttribute()
-    {
-        return $this->photo_path ? Storage::url($this->photo_path) : null;
-    }
-    
+    /** Relación 1–1 con la cuenta de Fitcoins */
     public function fitcoinAccount()
     {
-        return $this->hasOne(FitcoinAccount::class);
+        // el FK ya es colaborator_id; se incluye explícitamente por claridad
+        return $this->hasOne(FitcoinAccount::class, 'colaborator_id');
     }
 
+    /** Relación 1–N con las transacciones de Fitcoins (opcional) */
     public function fitcoinTransactions()
     {
         return $this->hasMany(FitcoinTransaction::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESORES
+    |--------------------------------------------------------------------------
+    */
+
+    /** Saldo de Fitcoins expuesto como coin_fits */
+    public function getCoinFitsAttribute(): int
+    {
+        // null-safe: si aún no hay cuenta, retorna 0
+        return $this->fitcoinAccount->balance ?? 0;
+    }
+
+    /** URL pública de la foto */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path
+            ? Storage::url($this->photo_path)   // genera /storage/…
+            : null;
     }
 }
