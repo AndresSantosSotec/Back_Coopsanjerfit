@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\WebAdmin\RoleController;
 use App\Http\Controllers\Api\WebAdmin\ColaboratorController;
 use App\Http\Controllers\Api\WebAdmin\FitcoinAccountController;
 use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
+use App\Http\Controllers\Api\WebAdmin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Api\WebAdmin\DashboardController;
 
 /** 
  * AppMobile Controllers 
@@ -63,6 +65,9 @@ Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
 
     // WebAdmin logout
     Route::post('logout', [UserController::class, 'logout']);
+    Route::get('activities',                  [AdminActivityController::class, 'index']);
+    Route::get('users/{user}/activities',     [AdminActivityController::class, 'byUser']);
+     Route::get('stats', [DashboardController::class, 'index']);
 });
 
 
