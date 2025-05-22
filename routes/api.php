@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
 
 use App\Http\Controllers\Api\AppMobile\AuthController;
 use App\Http\Controllers\Api\AppMobile\ActivityController;
+use App\Http\Controllers\Api\AppMobile\CollaboratorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,13 +77,14 @@ Route::prefix('app')->group(function () {
 
     // Protected
     Route::middleware('auth:sanctum')->group(function () {
-        // Current user
-        Route::get('user',   [AuthController::class, 'user']);
-        // Logout
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('collaborator', [ColaboratorController::class, 'show']);
-        // Activities
-        Route::get('activities', [ActivityController::class, 'index']);
-        Route::post('activities', [ActivityController::class, 'store']);
+        Route::get('user',         [AuthController::class,        'user']);
+        Route::post('logout',      [AuthController::class,        'logout']);
+        // Asegúrate de usar el mismo spelling que la URL
+        Route::get('collaborator', [CollaboratorController::class, 'show']);
+        // o si prefieres sin doble “l”:
+        // Route::get('colaborator', [CollaboratorController::class, 'show']);
+
+        Route::get('activities',   [ActivityController::class,    'index']);
+        Route::post('activities',  [ActivityController::class,    'store']);
     });
 });
