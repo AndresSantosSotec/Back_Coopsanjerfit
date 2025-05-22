@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 /** 
  * WebAdmin Controllers 
  */
+
 use App\Http\Controllers\Api\WebAdmin\UserController;
 use App\Http\Controllers\Api\WebAdmin\RoleController;
 use App\Http\Controllers\Api\WebAdmin\ColaboratorController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
 /** 
  * AppMobile Controllers 
  */
+
 use App\Http\Controllers\Api\AppMobile\AuthController;
 use App\Http\Controllers\Api\AppMobile\ActivityController;
 
@@ -43,19 +45,19 @@ Route::get('ping', function () {
 */
 Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
     // user info
-    Route::get('user', function(Request $request) {
+    Route::get('user', function (Request $request) {
         return $request->user();
     });
 
     // CRUD: roles, users, colaborators
     Route::apiResource('roles',       RoleController::class);
     Route::apiResource('users',       UserController::class);
-    Route::apiResource('colaborators',ColaboratorController::class);
+    Route::apiResource('colaborators', ColaboratorController::class);
 
     // Fitcoin accounts & transactions
-    Route::get( 'fitcoin/accounts',                    [FitcoinAccountController::class,     'index']);
-    Route::get( 'fitcoin/accounts/{colaborator}',      [FitcoinAccountController::class,     'show']);
-    Route::get( 'fitcoin/accounts/{colaborator}/txns', [FitcoinTransactionController::class, 'index']);
+    Route::get('fitcoin/accounts',                    [FitcoinAccountController::class,     'index']);
+    Route::get('fitcoin/accounts/{colaborator}',      [FitcoinAccountController::class,     'show']);
+    Route::get('fitcoin/accounts/{colaborator}/txns', [FitcoinTransactionController::class, 'index']);
     Route::post('fitcoin/accounts/{colaborator}/txns', [FitcoinTransactionController::class, 'store']);
 
     // WebAdmin logout
@@ -77,9 +79,10 @@ Route::prefix('app')->group(function () {
         // Current user
         Route::get('user',   [AuthController::class, 'user']);
         // Logout
-        Route::post('logout',[AuthController::class, 'logout']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('collaborator', [ColaboratorController::class, 'show']);
         // Activities
-        Route::get( 'activities', [ActivityController::class, 'index']);
+        Route::get('activities', [ActivityController::class, 'index']);
         Route::post('activities', [ActivityController::class, 'store']);
     });
 });

@@ -95,11 +95,16 @@ class ColaboratorController extends Controller
     /* ---------------------------------------------------------------------
      | 3. Mostrar colaborador individual (con saldo de Fitcoins)
      * --------------------------------------------------------------------*/
-    public function show(Colaborator $colaborator)
+    public function show(Request $request)
     {
-        $colaborator->load(['user', 'fitcoinAccount']);
+        $collab = $request->user()
+                         ->colaborator()                    // relación
+                         ->with(['user', 'fitcoinAccount']) // cargas
+                         ->firstOrFail();
 
-        return response()->json($colaborator);
+        return response()->json([
+            'collaborator' => $collab
+        ]);
     }
 
     /* ---------------------------------------------------------------------
