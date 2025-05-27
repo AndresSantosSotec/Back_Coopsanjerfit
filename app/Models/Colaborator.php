@@ -77,8 +77,11 @@ class Colaborator extends Model
     /** URL pública de la foto */
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo_path
-            ? Storage::url($this->photo_path)   // genera /storage/…
-            : null;
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        // Usa url() en lugar de Storage::url() para forzar la URL absoluta
+        return url("storage/{$this->photo_path}");
     }
 }

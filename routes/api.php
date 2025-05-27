@@ -91,5 +91,7 @@ Route::prefix('app')->group(function () {
 
         Route::get('activities',   [ActivityController::class,    'index']);
         Route::post('activities',  [ActivityController::class,    'store']);
+            Route::post('user/photo',          [AuthController::class, 'updatePhoto']);
+    Route::post('user/change-password',[AuthController::class, 'changePassword']);
     });
 });
