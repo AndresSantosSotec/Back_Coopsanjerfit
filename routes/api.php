@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 /** 
  * WebAdmin Controllers 
  */
+
 use App\Http\Controllers\Api\WebAdmin\UserController;
 use App\Http\Controllers\Api\WebAdmin\RoleController;
 use App\Http\Controllers\Api\WebAdmin\ColaboratorController;
@@ -66,7 +67,7 @@ Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
     Route::post('logout', [UserController::class, 'logout']);
     Route::get('activities',                  [AdminActivityController::class, 'index']);
     Route::get('users/{user}/activities',     [AdminActivityController::class, 'byUser']);
-     Route::get('stats', [DashboardController::class, 'index']);
+    Route::get('stats', [DashboardController::class, 'index']);
 });
 
 
@@ -90,7 +91,9 @@ Route::prefix('app')->group(function () {
 
         Route::get('activities',   [ActivityController::class,    'index']);
         Route::post('activities',  [ActivityController::class,    'store']);
-            Route::post('user/photo',          [AuthController::class, 'updatePhoto']);
-    Route::post('user/change-password',[AuthController::class, 'changePassword']);
+        //obntener lista de actividades del usuario logeado
+        Route::get('user/activities', [ActivityController::class, 'getUserActivities']);
+        Route::post('user/photo',          [AuthController::class, 'updatePhoto']);
+        Route::post('user/change-password', [AuthController::class, 'changePassword']);
     });
 });

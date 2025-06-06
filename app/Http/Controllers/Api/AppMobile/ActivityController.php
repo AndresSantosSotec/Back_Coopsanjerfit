@@ -88,4 +88,49 @@ class ActivityController extends Controller
             'activity' => $activity
         ], 201);
     }
+
+    //actividades por usuario especifico logeado
+        public function getUserActivities(Request $request)
+    {
+        $user = $request->user();
+        
+        $query = Activity::where('user_id', $user->id);
+
+        // Optional date range filter
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('created_at', [
+                $request->start_date,
+                $request->end_date
+            ]);
+        }
+
+        // Optional exercise type filter
+        if ($request->has('exercise_type')) {
+            $query->where('exercise_type', $request->exercise_type);
+        }
+
+        $activities = $query->latest()
+            ->get()
+            ->map(fn($activity) => [
+                'id' => $activity->id,
+                'exercise_type' => $activity->exercise_type,
+                'duration' => $activity->duration,
+                'duration_unit' => $activity->duration_unit,
+                'intensity' => $activity->intensity,
+                'calories' => $activity->calories,
+                'steps' => $activity->steps,
+                'selfie_url' => $activity->selfie_url,
+                'device_image_url' => $activity->device_image_url,
+                'attachments_url' => $activity->attachments_url,
+                'notes' => $activity->notes,
+                'location_lat' => $activity->location_lat,
+                'location_lng' => $activity->location_lng,
+                'created_at' => $activity->created_at->toDateTimeString(),
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $activities
+        ]);
+    }
 }

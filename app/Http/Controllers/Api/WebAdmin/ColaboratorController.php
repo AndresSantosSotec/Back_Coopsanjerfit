@@ -47,6 +47,7 @@ class ColaboratorController extends Controller
             'indice_masa_corporal' => 'nullable|numeric|min:0',
             'nivel_asignado'       => 'nullable|string|max:50',
             'photo'                => 'nullable|image|mimes:jpeg,png|max:2048',
+            'IMC_objetivo'         => 'nullable|numeric|min:18.5|max:40',
         ]);
 
         /* 1) Crear usuario */
@@ -74,11 +75,21 @@ class ColaboratorController extends Controller
             'padecimientos'        => $data['padecimientos'] ?? null,
             'indice_masa_corporal' => $data['indice_masa_corporal'] ?? null,
             'nivel_asignado'       => $data['nivel_asignado'] ?? null,
+            'IMC_objetivo'         => $data['IMC_objetivo'] ?? 24.0,  // IMC objetivo por defecto
         ];
 
         if ($request->hasFile('photo')) {
             $colData['photo_path'] = $request->file('photo')
                 ->store('colaborator_photos', 'public');
+        }
+
+        // Calcular peso objetivo si tenemos altura
+        if (isset($data['altura'])) {
+            $alturaEnMetros = $data['altura'] / 100; // convertir cm a metros
+            $colData['peso_objetivo'] = round(
+                ($colData['IMC_objetivo'] * $alturaEnMetros * $alturaEnMetros),
+                2
+            );
         }
 
         $colaborator = Colaborator::create($colData);
@@ -127,6 +138,7 @@ class ColaboratorController extends Controller
             'indice_masa_corporal' => 'sometimes|nullable|numeric|min:0',
             'nivel_asignado'       => 'sometimes|nullable|string|max:50',
             'photo'                => 'sometimes|nullable|image|mimes:jpeg,png|max:2048',
+            'IMC_objetivo'         => 'sometimes|nullable|numeric|min:18.5|max:40',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -135,6 +147,17 @@ class ColaboratorController extends Controller
             }
             $data['photo_path'] = $request->file('photo')
                 ->store('colaborator_photos', 'public');
+        }
+
+        // Calcular nuevo peso objetivo si cambia IMC o altura
+        if (isset($data['IMC_objetivo']) || isset($data['altura'])) {
+            $altura = isset($data['altura']) ? $data['altura'] : $colaborator->altura;
+            $imc = isset($data['IMC_objetivo']) ? $data['IMC_objetivo'] : $colaborator->IMC_objetivo;
+
+            if ($altura) {
+                $alturaEnMetros = $altura / 100;
+                $data['peso_objetivo'] = round(($imc * $alturaEnMetros * $alturaEnMetros), 2);
+            }
         }
 
         $colaborator->update($data);

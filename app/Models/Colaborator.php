@@ -31,6 +31,8 @@ class Colaborator extends Model
         'indice_masa_corporal',
         'nivel_asignado',
         'photo_path',
+        'IMC_objetivo',
+        'peso_objetivo',
     ];
 
     /**  Estos campos virtuales aparecerán en la respuesta JSON */
@@ -83,5 +85,29 @@ class Colaborator extends Model
 
         // Usa url() en lugar de Storage::url() para forzar la URL absoluta
         return url("storage/{$this->photo_path}");
+    }
+
+    // Agregar el método para calcular el peso objetivo
+    protected static function booted()
+    {
+        static::saving(function ($colaborator) {
+            // Si tenemos altura y IMC_objetivo, calculamos el peso_objetivo
+            if ($colaborator->altura && $colaborator->IMC_objetivo) {
+                $alturaEnMetros = $colaborator->altura / 100; // convertir cm a metros
+                $colaborator->peso_objetivo = round(
+                    ($colaborator->IMC_objetivo ?? 24.0) * ($alturaEnMetros * $alturaEnMetros),
+                    2
+                );
+            }
+        });
+    }
+
+    // Agregar un accessor para la diferencia de peso
+    public function getDiferenciaPesoAttribute(): ?float
+    {
+        if (!$this->peso || !$this->peso_objetivo) {
+            return null;
+        }
+        return round($this->peso - $this->peso_objetivo, 2);
     }
 }
