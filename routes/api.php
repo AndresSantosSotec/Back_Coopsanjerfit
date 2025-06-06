@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 /** 
  * WebAdmin Controllers 
  */
-
 use App\Http\Controllers\Api\WebAdmin\UserController;
 use App\Http\Controllers\Api\WebAdmin\RoleController;
 use App\Http\Controllers\Api\WebAdmin\ColaboratorController;
