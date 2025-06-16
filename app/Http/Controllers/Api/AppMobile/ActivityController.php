@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Api/AppMobile/ActivityController.php
 
 namespace App\Http\Controllers\Api\AppMobile;
 
@@ -93,7 +92,7 @@ class ActivityController extends Controller
         public function getUserActivities(Request $request)
     {
         $user = $request->user();
-        
+
         $query = Activity::where('user_id', $user->id);
 
         // Optional date range filter
