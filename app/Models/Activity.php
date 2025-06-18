@@ -27,6 +27,16 @@ class Activity extends Model
         'location_lng',
     ];
 
+    /** Estos atributos virtuales se incluirán automáticamente
+     *  cuando el modelo se serialice a JSON. De esta forma las
+     *  URLs de las imágenes estarán disponibles en las respuestas
+     *  del API sin necesidad de transformaciones adicionales. */
+    protected $appends = [
+        'selfie_url',
+        'device_image_url',
+        'attachments_url',
+    ];
+
     protected $casts = [
         'attachments'   => 'array',
         'location_lat'  => 'decimal:6',
