@@ -33,6 +33,7 @@ class Colaborator extends Model
         'photo_path',
         'IMC_objetivo',
         'peso_objetivo',
+        'nickname',
     ];
 
     /**  Estos campos virtuales aparecerán en la respuesta JSON */

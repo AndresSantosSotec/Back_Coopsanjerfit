@@ -48,6 +48,7 @@ class ColaboratorController extends Controller
             'nivel_asignado'       => 'nullable|string|max:50',
             'photo'                => 'nullable|image|mimes:jpeg,png|max:2048',
             'IMC_objetivo'         => 'nullable|numeric|min:18.5|max:40',
+            'nickname'             => 'nullable|string|max:255',
         ]);
 
         /* 1) Crear usuario */
@@ -139,6 +140,7 @@ class ColaboratorController extends Controller
             'nivel_asignado'       => 'sometimes|nullable|string|max:50',
             'photo'                => 'sometimes|nullable|image|mimes:jpeg,png|max:2048',
             'IMC_objetivo'         => 'sometimes|nullable|numeric|min:18.5|max:40',
+            'nickname'             => 'sometimes|nullable|string|max:255',
         ]);
 
         if ($request->hasFile('photo')) {
