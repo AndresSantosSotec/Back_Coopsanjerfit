@@ -3,8 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/** 
- * WebAdmin Controllers 
+/**
+ * WebAdmin Controllers
  */
 
 use App\Http\Controllers\Api\WebAdmin\UserController;
@@ -14,9 +14,10 @@ use App\Http\Controllers\Api\WebAdmin\FitcoinAccountController;
 use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
 use App\Http\Controllers\Api\WebAdmin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Api\WebAdmin\DashboardController;
+use App\Http\Controllers\Api\WebAdmin\NotificationController;
 
-/** 
- * AppMobile Controllers 
+/**
+ * AppMobile Controllers
  */
 
 use App\Http\Controllers\Api\AppMobile\AuthController;
@@ -68,7 +69,14 @@ Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
     Route::get('activities',                  [AdminActivityController::class, 'index']);
     Route::get('users/{user}/activities',     [AdminActivityController::class, 'byUser']);
     Route::get('stats', [DashboardController::class, 'index']);
+
+    // Notifications
+    // Route::get('/admin/notifications', [NotificationController::class,'index'])
+    //  ->middleware('auth','can:send-notifications');
+    // Route::post('/admin/notifications/send', [NotificationController::class, 'send']);
 });
+
+
 
 
 /*
