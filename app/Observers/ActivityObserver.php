@@ -27,9 +27,12 @@ class ActivityObserver
         $metaSteps = config("coinfits.levels.{$level}.steps", 0);
         $metaMins  = config("coinfits.levels.{$level}.minutes", 0);
 
+        $activityMinutes = $activity->duration_unit === 'horas'
+            ? $activity->duration * 60
+            : $activity->duration;
+
         $meetsGoal = $activity->steps >= $metaSteps
-            && $activity->duration >= $metaMins
-            && $activity->duration_unit === 'minutos';
+            && $activityMinutes >= $metaMins;
 
         $startDay = Carbon::parse($activity->created_at)->startOfDay();
         $endDay   = Carbon::parse($activity->created_at)->endOfDay();
@@ -39,8 +42,10 @@ class ActivityObserver
             ->where('id', '<', $activity->id)
             ->whereBetween('created_at', [$startDay, $endDay])
             ->where('steps', '>=', $metaSteps)
-            ->where('duration', '>=', $metaMins)
-            ->where('duration_unit', 'minutos')
+            ->whereRaw(
+                "CASE WHEN duration_unit = 'horas' THEN duration * 60 ELSE duration END >= ?",
+                [$metaMins]
+            )
             ->exists();
 
         $awarded = 0;
@@ -73,8 +78,10 @@ class ActivityObserver
             $daysMet = Activity::where('user_id', $activity->user_id)
                 ->whereBetween('created_at', [$weekStart, $weekEnd])
                 ->where('steps', '>=', $metaSteps)
-                ->where('duration', '>=', $metaMins)
-                ->where('duration_unit', 'minutos')
+                ->whereRaw(
+                    "CASE WHEN duration_unit = 'horas' THEN duration * 60 ELSE duration END >= ?",
+                    [$metaMins]
+                )
                 ->selectRaw('DATE(created_at) as day')
                 ->groupBy('day')
                 ->get()
