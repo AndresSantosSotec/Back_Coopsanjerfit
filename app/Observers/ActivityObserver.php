@@ -6,20 +6,25 @@ use App\Models\Activity;
 use App\Services\FitcoinService;
 use Illuminate\Support\Carbon;
 use App\Models\FitcoinTransaction;
-use Illuminate\Support\Facades\Config;
+        $previousActs = Activity::where('user_id', $activity->user_id)
+            ->get();
 
-class ActivityObserver
-{
-    protected $fitcoin;
+        $prevSteps = $previousActs->sum('steps');
+        $prevMinutes = $previousActs->sum(function ($act) {
+            return $act->duration_unit === 'horas'
+                ? $act->duration * 60
+                : $act->duration;
+        });
 
-    public function __construct(FitcoinService $fitcoin)
-    {
-        $this->fitcoin = $fitcoin;
-    }
+        $goalMetBefore = $prevSteps >= $metaSteps && $prevMinutes >= $metaMins;
 
-    public function created(Activity $activity)
-    {
-        $col = $activity->user->colaborator;
+        $totalSteps = $prevSteps + $activity->steps;
+        $totalMinutes = $prevMinutes + $activityMinutes;
+
+        $goalMetNow = $totalSteps >= $metaSteps && $totalMinutes >= $metaMins;
+        if (! $goalMetBefore && $goalMetNow) {
+            if ($totalSteps > $metaSteps) {
+        if (! $goalMetBefore && $goalMetNow) {
         if (! $col) {
             return;
         }
