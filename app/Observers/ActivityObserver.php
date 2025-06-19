@@ -9,6 +9,14 @@ use App\Models\FitcoinTransaction;
         $previousActs = Activity::where('user_id', $activity->user_id)
             ->get();
 
+        $earnedToday = $col->fitcoinAccount
+            ? $col->fitcoinAccount->transactions()
+                ->where('type', 'credit')
+                ->where('description', 'not like', 'Bono semanal%')
+                ->whereBetween('created_at', [$startDay, $endDay])
+                ->sum('amount')
+            : 0;
+
         $prevSteps = $previousActs->sum('steps');
         $prevMinutes = $previousActs->sum(function ($act) {
             return $act->duration_unit === 'horas'
@@ -24,11 +32,15 @@ use App\Models\FitcoinTransaction;
         $goalMetNow = $totalSteps >= $metaSteps && $totalMinutes >= $metaMins;
         if (! $goalMetBefore && $goalMetNow) {
             if ($totalSteps > $metaSteps) {
-        if (! $goalMetBefore && $goalMetNow) {
-        if (! $col) {
-            return;
-        }
-
+            $remaining = 10 - $earnedToday;
+            if ($remaining > 0) {
+                $toAward = min($awarded, $remaining);
+                $this->fitcoin->award(
+                    $col,
+                    $toAward,
+                    "Actividad ID {$activity->id}"
+                );
+            }
         // 1) Metas del colaborador
         $level     = $col->nivel_asignado;
         $metaSteps = config("coinfits.levels.{$level}.steps", 0);
