@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 // Importa el trait de Sanctum
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\DeviceToken;
 
 class User extends Authenticatable
 {
@@ -48,11 +49,19 @@ class User extends Authenticatable
         return $this->hasOne(Colaborator::class);
     }
 
-        public function activities()
+    public function activities()
     {
         // Ajusta App\Models\Activity al namespace correcto de tu modelo de actividad
         return $this->hasMany(Activity::class);
     }
-    
-    
+
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    public function routeNotificationForFcm()
+    {
+        return $this->deviceTokens()->pluck('token')->toArray();
+    }
 }
