@@ -38,19 +38,16 @@ class ActivityObserver
         $startDay     = $activityDate->copy()->startOfDay();
         $endDay       = $activityDate->copy()->endOfDay();
 
-        // 3) Balance acumulado hoy (excluyendo bonos semanales)
+        // 3) Cuenta actual del colaborador
+        //    (solo se utiliza para bonos semanales)
         $account = $col->fitcoinAccount;
-        $earnedToday = $account
-            ? $account->transactions()
-                ->where('type', 'credit')
-                ->where('description', 'not like', 'Bono semanal%')
-                ->whereBetween('created_at', [$startDay, $endDay])
-                ->sum('amount')
-            : 0;
 
         // 4) Actividades previas hoy
         $previousActs = Activity::where('user_id', $activity->user_id)
-            ->where('id', '<', $activity->id)
+            // Considerar solo actividades previas dentro del mismo día
+            // Usamos created_at en lugar del ID para evitar problemas de
+            // ordenamiento o importaciones manuales.
+            ->where('created_at', '<', $activity->created_at)
             ->whereBetween('created_at', [$startDay, $endDay])
             ->get();
 
@@ -79,17 +76,15 @@ class ActivityObserver
             }
         }
 
-        // 7) Limitar al máximo diario (10 monedas)
+        // 7) Otorgar las CoinFits sin límite diario
+        //    La variable $earnedToday fue eliminada para permitir
+        //    múltiples premios en un mismo día.
         if ($awarded > 0) {
-            $remaining = max(0, 10 - $earnedToday);
-            $toAward   = min($awarded, $remaining);
-            if ($toAward > 0) {
-                $this->fitcoin->award(
-                    $col,
-                    $toAward,
-                    "Actividad ID {$activity->id}"
-                );
-            }
+            $this->fitcoin->award(
+                $col,
+                $awarded,
+                "Actividad ID {$activity->id}"
+            );
         }
 
         // 8) Bono semanal (semana de la actividad)
