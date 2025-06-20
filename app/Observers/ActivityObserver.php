@@ -5,7 +5,8 @@ namespace App\Observers;
 use App\Models\Activity;
 use App\Services\FitcoinService;
 use Illuminate\Support\Facades\Config;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
+use App\Models\FitcoinTransaction;
 
 class ActivityObserver
 {
@@ -19,42 +20,34 @@ class ActivityObserver
     public function created(Activity $activity)
     {
         $col = $activity->user->colaborator;
-        if (! $col) {
-            return;
-        }
+        if (! $col) return;
 
+        $awarded   = 0;
         $level     = $col->nivel_asignado;
         $metaSteps = config("coinfits.levels.{$level}.steps", 0);
         $metaMins  = config("coinfits.levels.{$level}.minutes", 0);
 
-        $meetsGoal = $activity->steps >= $metaSteps
-            && $activity->duration >= $metaMins
-            && $activity->duration_unit === 'minutos';
+        // Convertir la duración a minutos para la evaluación
+        $durationMinutes = $activity->duration_unit === 'horas'
+            ? $activity->duration * 60
+            : $activity->duration;
 
-        $startDay = Carbon::parse($activity->created_at)->startOfDay();
-        $endDay   = Carbon::parse($activity->created_at)->endOfDay();
-
-        // Verificar si ya se registró una actividad válida hoy
-        $alreadyMetToday = Activity::where('user_id', $activity->user_id)
-            ->where('id', '<', $activity->id)
-            ->whereBetween('created_at', [$startDay, $endDay])
-            ->where('steps', '>=', $metaSteps)
-            ->where('duration', '>=', $metaMins)
-            ->where('duration_unit', 'minutos')
-            ->exists();
-
-        $awarded = 0;
-
-        if ($meetsGoal && ! $alreadyMetToday) {
+        // 1) Cumplió pasos **y** minutos activos?
+        if (
+            $activity->steps >= $metaSteps
+            && $durationMinutes >= $metaMins
+        ) {
             $awarded += 10;
+        }
 
-            if ($activity->selfie_path || $activity->location_lat) {
-                $awarded += 2;
-            }
+        // 2) Evidencia (foto o ubicación)
+        if ($activity->selfie_path || $activity->location_lat) {
+            $awarded += 2;
+        }
 
-            if ($activity->steps > $metaSteps) {
-                $awarded += 3;
-            }
+        // 3) Superó la meta de pasos
+        if ($activity->steps > $metaSteps) {
+            $awarded += 3;
         }
 
         if ($awarded > 0) {
@@ -65,36 +58,35 @@ class ActivityObserver
             );
         }
 
-        // Evaluar bono semanal si esta actividad aportó para la meta diaria
-        if ($meetsGoal && ! $alreadyMetToday) {
-            $weekStart = $startDay->copy()->startOfWeek();
-            $weekEnd   = $startDay->copy()->endOfWeek();
+        // 4) Bono semanal por cumplir 5 días o más
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek   = Carbon::now()->endOfWeek();
 
-            $daysMet = Activity::where('user_id', $activity->user_id)
-                ->whereBetween('created_at', [$weekStart, $weekEnd])
-                ->where('steps', '>=', $metaSteps)
-                ->where('duration', '>=', $metaMins)
-                ->where('duration_unit', 'minutos')
-                ->selectRaw('DATE(created_at) as day')
-                ->groupBy('day')
-                ->get()
-                ->count();
-
-            if ($daysMet >= 5) {
-                $bonusExists = $col->fitcoinAccount
-                    ? $col->fitcoinAccount->transactions()
-                        ->where('description', 'like', 'Bono semanal%')
-                        ->whereBetween('created_at', [$weekStart, $weekEnd])
-                        ->exists()
-                    : false;
-
-                if (! $bonusExists) {
-                    $this->fitcoin->award(
-                        $col,
-                        10,
-                        'Bono semanal ' . $weekStart->format('Y-m-d')
-                    );
+        $daysMet = Activity::where('user_id', $activity->user_id)
+            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+            ->get()
+            ->groupBy(fn($a) => $a->created_at->toDateString())
+            ->filter(function ($acts) use ($metaSteps, $metaMins) {
+                foreach ($acts as $act) {
+                    $minutes = $act->duration_unit === 'horas'
+                        ? $act->duration * 60
+                        : $act->duration;
+                    if ($act->steps >= $metaSteps && $minutes >= $metaMins) {
+                        return true;
+                    }
                 }
+                return false;
+            })
+            ->count();
+
+        if ($daysMet >= 5) {
+            $bonusDesc = 'Bono semanal ' . $startOfWeek->toDateString();
+            $exists = FitcoinTransaction::where('fitcoin_account_id', $col->fitcoinAccount->id ?? 0)
+                ->where('description', $bonusDesc)
+                ->exists();
+
+            if (! $exists) {
+                $this->fitcoin->award($col, 10, $bonusDesc);
             }
         }
     }
