@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\WebAdmin\FitcoinTransactionController;
 use App\Http\Controllers\Api\WebAdmin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Api\WebAdmin\DashboardController;
 use App\Http\Controllers\Api\WebAdmin\NotificationController;
+use App\Http\Controllers\Api\WebAdmin\GeneralInfoController as AdminGeneralInfoController;
 
 /**
  * AppMobile Controllers
@@ -23,6 +24,9 @@ use App\Http\Controllers\Api\WebAdmin\NotificationController;
 use App\Http\Controllers\Api\AppMobile\AuthController;
 use App\Http\Controllers\Api\AppMobile\ActivityController;
 use App\Http\Controllers\Api\AppMobile\CollaboratorController;
+use App\Http\Controllers\Api\AppMobile\DeviceTokenController;
+use App\Http\Controllers\Api\AppMobile\NotificationController as MobileNotificationController;
+use App\Http\Controllers\Api\AppMobile\GeneralInfoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,9 +75,9 @@ Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
     Route::get('stats', [DashboardController::class, 'index']);
 
     // Notifications
-    // Route::get('/admin/notifications', [NotificationController::class,'index'])
-    //  ->middleware('auth','can:send-notifications');
-    // Route::post('/admin/notifications/send', [NotificationController::class, 'send']);
+    Route::post("notifications/send", [NotificationController::class, "send"]);
+    // General Information
+    Route::apiResource("info", AdminGeneralInfoController::class);
 });
 
 
@@ -103,5 +107,10 @@ Route::prefix('app')->group(function () {
         Route::get('user/activities', [ActivityController::class, 'getUserActivities']);
         Route::post('user/photo',          [AuthController::class, 'updatePhoto']);
         Route::post('user/change-password', [AuthController::class, 'changePassword']);
+
+        Route::post('device-tokens', [DeviceTokenController::class, 'store']);
+        Route::get('notifications', [MobileNotificationController::class, 'index']);
+        Route::post('notifications/{id}/read', [MobileNotificationController::class, 'markAsRead']);
+        Route::get('info', [GeneralInfoController::class, 'index']);
     });
 });
