@@ -13,5 +13,6 @@ class GeneralInfo extends Model
         'title',
         'content',
         'category',
+        'image_path',
     ];
 }
