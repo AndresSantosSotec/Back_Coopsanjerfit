@@ -19,6 +19,7 @@ class GeneralInfoController extends Controller
             'title' => 'required|string',
             'content' => 'required|string',
             'category' => 'nullable|string',
+            'image_path' => 'nullable|string',
         ]);
 
         $info = GeneralInfo::create($data);
@@ -36,6 +37,7 @@ class GeneralInfoController extends Controller
             'title' => 'sometimes|required|string',
             'content' => 'sometimes|required|string',
             'category' => 'nullable|string',
+            'image_path' => 'nullable|string',
         ]);
 
         $info->update($data);
