@@ -114,4 +114,6 @@ Route::prefix('app')->group(function () {
         Route::get('info', [GeneralInfoController::class, 'index']);
 
     });
+    Route::get('info', [GeneralInfoController::class, 'index']);
+
 });

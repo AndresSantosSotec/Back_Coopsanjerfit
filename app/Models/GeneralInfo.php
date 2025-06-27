@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Storage;
 class GeneralInfo extends Model
 {
     protected $fillable = [
-
         'title',
         'content',
         'category',
@@ -27,7 +26,8 @@ class GeneralInfo extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image_path
-            ? \Illuminate\Support\Facades\Storage::url($this->image_path)
+            // Storage::url() → "/storage/…", asset() lo convierte en "http://tu-dominio/storage/…"
+            ? asset(Storage::url($this->image_path))
             : null;
     }
 
@@ -37,8 +37,7 @@ class GeneralInfo extends Model
     public function getVideoUrlAttribute(): ?string
     {
         return $this->video_path
-            ? \Illuminate\Support\Facades\Storage::url($this->video_path)
-
+            ? asset(Storage::url($this->video_path))
             : null;
     }
 }
