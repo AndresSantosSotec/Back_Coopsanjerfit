@@ -1,45 +1,29 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class GeneralInfo extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'title',
-        'content',
-        'category',
-        'image_path',
-        'video_path',
+        'title', 'content', 'category', 'image_path', 'video_path',
     ];
 
-    /** Estos atributos virtuales se incluirán en las respuestas JSON */
-    protected $appends = [
-        'image_url',
-        'video_url',
-    ];
+    // Para que al serializar al JSON incluya estos atributos
+    protected $appends = ['image_url', 'video_url'];
 
-    /**
-     * Obtiene la URL pública de la imagen
-     */
-    public function getImageUrlAttribute(): ?string
+    public function getImageUrlAttribute()
     {
         return $this->image_path
-            ? url("storage/{$this->image_path}")
+            ? asset(Storage::url($this->image_path))
             : null;
     }
 
-    /**
-     * Obtiene la URL pública del video
-     */
-    public function getVideoUrlAttribute(): ?string
+    public function getVideoUrlAttribute()
     {
         return $this->video_path
-            ? url("storage/{$this->video_path}")
+            ? asset(Storage::url($this->video_path))
             : null;
     }
 }
