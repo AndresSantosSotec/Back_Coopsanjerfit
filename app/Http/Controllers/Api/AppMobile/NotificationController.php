@@ -21,4 +21,13 @@ class NotificationController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        $notification = $user->notifications()->findOrFail($id);
+        $notification->delete();
+
+        return response()->json(['status' => 'ok']);
+    }
 }
