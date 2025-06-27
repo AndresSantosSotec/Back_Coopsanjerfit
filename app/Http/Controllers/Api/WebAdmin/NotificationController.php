@@ -11,15 +11,17 @@ class NotificationController extends Controller
     public function send(Request $req)
     {
         $data = $req->validate([
-          'title'=>'required|string',
-          'body'=>'required|string',
-          'filter'=>'required|string',
+            'title'   => 'required|string',
+            'body'    => 'required|string',
+            'filter'  => 'required|string',
+            'user_id' => 'nullable|integer',
         ]);
 
-        $users = match($data['filter']) {
-          'all'   => User::all(),
-          'koala' => User::where('team','KoalaFit')->get(),
-          default => User::where('id',$data['filter'])->get(),
+        $users = match ($data['filter']) {
+            'all'   => User::all(),
+            'koala' => User::where('team', 'KoalaFit')->get(),
+            'user'  => User::where('id', $data['user_id'])->get(),
+            default => User::where('id', $data['filter'])->get(),
         };
 
         foreach ($users as $u) {

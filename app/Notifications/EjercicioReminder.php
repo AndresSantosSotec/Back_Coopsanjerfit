@@ -1,24 +1,24 @@
 <?php
 // app/Notifications/EjercicioReminder.php
 namespace App\Notifications;
+
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Fcm\FcmChannel;
-use NotificationChannels\Fcm\FcmMessage;
-use NotificationChannels\Fcm\Resources\Notification as FcmNotif;
 
 class EjercicioReminder extends Notification
 {
     public function __construct(protected $title, protected $body) {}
 
-    public function via($notifiable) { return [FcmChannel::class]; }
-
-    public function toFcm($notifiable)
+    public function via($notifiable)
     {
-        return FcmMessage::create()
-            ->setNotification(FcmNotif::create()
-                ->setTitle($this->title)
-                ->setBody($this->body)
-            )
-            ->setData(['action'=>'reminder_exercise']);
+        return ['database'];
+    }
+
+    public function toArray($notifiable)
+    {
+        return [
+            'title'  => $this->title,
+            'body'   => $this->body,
+            'action' => 'reminder_exercise',
+        ];
     }
 }
