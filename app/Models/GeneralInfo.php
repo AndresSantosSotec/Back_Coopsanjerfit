@@ -14,5 +14,32 @@ class GeneralInfo extends Model
         'content',
         'category',
         'image_path',
+        'video_path',
     ];
+
+    /** Estos atributos virtuales se incluirán en las respuestas JSON */
+    protected $appends = [
+        'image_url',
+        'video_url',
+    ];
+
+    /**
+     * Obtiene la URL pública de la imagen
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path
+            ? url("storage/{$this->image_path}")
+            : null;
+    }
+
+    /**
+     * Obtiene la URL pública del video
+     */
+    public function getVideoUrlAttribute(): ?string
+    {
+        return $this->video_path
+            ? url("storage/{$this->video_path}")
+            : null;
+    }
 }
