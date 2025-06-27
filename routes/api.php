@@ -24,7 +24,6 @@ use App\Http\Controllers\Api\WebAdmin\GeneralInfoController as AdminGeneralInfoC
 use App\Http\Controllers\Api\AppMobile\AuthController;
 use App\Http\Controllers\Api\AppMobile\ActivityController;
 use App\Http\Controllers\Api\AppMobile\CollaboratorController;
-use App\Http\Controllers\Api\AppMobile\DeviceTokenController;
 use App\Http\Controllers\Api\AppMobile\NotificationController as MobileNotificationController;
 use App\Http\Controllers\Api\AppMobile\GeneralInfoController;
 
@@ -108,7 +107,6 @@ Route::prefix('app')->group(function () {
         Route::post('user/photo',          [AuthController::class, 'updatePhoto']);
         Route::post('user/change-password', [AuthController::class, 'changePassword']);
 
-        Route::post('device-tokens', [DeviceTokenController::class, 'store']);
         Route::get('notifications', [MobileNotificationController::class, 'index']);
         Route::post('notifications/{id}/read', [MobileNotificationController::class, 'markAsRead']);
         Route::get('info', [GeneralInfoController::class, 'index']);
