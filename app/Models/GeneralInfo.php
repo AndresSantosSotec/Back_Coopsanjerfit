@@ -7,23 +7,38 @@ use Illuminate\Support\Facades\Storage;
 class GeneralInfo extends Model
 {
     protected $fillable = [
-        'title', 'content', 'category', 'image_path', 'video_path',
+
+        'title',
+        'content',
+        'category',
+        'image_path',
+        'video_path',
     ];
 
-    // Para que al serializar al JSON incluya estos atributos
-    protected $appends = ['image_url', 'video_url'];
+    /** Estos atributos virtuales se incluirán en las respuestas JSON */
+    protected $appends = [
+        'image_url',
+        'video_url',
+    ];
 
-    public function getImageUrlAttribute()
+    /**
+     * Obtiene la URL pública de la imagen
+     */
+    public function getImageUrlAttribute(): ?string
     {
         return $this->image_path
-            ? asset(Storage::url($this->image_path))
+            ? \Illuminate\Support\Facades\Storage::url($this->image_path)
             : null;
     }
 
-    public function getVideoUrlAttribute()
+    /**
+     * Obtiene la URL pública del video
+     */
+    public function getVideoUrlAttribute(): ?string
     {
         return $this->video_path
-            ? asset(Storage::url($this->video_path))
+            ? \Illuminate\Support\Facades\Storage::url($this->video_path)
+
             : null;
     }
 }

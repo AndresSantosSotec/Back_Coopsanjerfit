@@ -17,23 +17,29 @@ class GeneralInfoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'   => 'required|string',
-            'content' => 'required|string',
-            'category' => 'nullable|string',
-            'image'   => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'video'   => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
+            'title'       => 'required|string',
+            'content'     => 'required|string',
+            'category'    => 'nullable|string',
+            'image'       => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_path'  => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'video'       => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+            'video_path'  => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
         ]);
 
         $data = collect($validated)->only(['title', 'content', 'category'])->all();
 
-        if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')
-                ->store('general_images', 'public');
+
+        $imageFile = $request->file('image') ?? $request->file('image_path');
+        if ($imageFile) {
+            $data['image_path'] = $imageFile->store('general_images', 'public');
         }
 
-        if ($request->hasFile('video')) {
-            $data['video_path'] = $request->file('video')
-                ->store('general_videos', 'public');
+        $videoFile = $request->file('video') ?? $request->file('video_path');
+        if ($videoFile) {
+            $data['video_path'] = $videoFile->store('general_videos', 'public');
+
         }
 
         $info = GeneralInfo::create($data);
@@ -49,29 +55,35 @@ class GeneralInfoController extends Controller
     public function update(Request $request, GeneralInfo $info)
     {
         $validated = $request->validate([
-            'title'   => 'sometimes|required|string',
-            'content' => 'sometimes|required|string',
-            'category' => 'nullable|string',
-            'image'   => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'video'   => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
+            'title'       => 'sometimes|required|string',
+            'content'     => 'sometimes|required|string',
+            'category'    => 'nullable|string',
+            'image'       => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_path'  => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'video'       => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+            'video_path'  => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
         ]);
 
         $data = collect($validated)->only(['title', 'content', 'category'])->all();
 
-        if ($request->hasFile('image')) {
+
+        $imageFile = $request->file('image') ?? $request->file('image_path');
+        if ($imageFile) {
             if ($info->image_path) {
                 Storage::disk('public')->delete($info->image_path);
             }
-            $data['image_path'] = $request->file('image')
-                ->store('general_images', 'public');
+            $data['image_path'] = $imageFile->store('general_images', 'public');
         }
 
-        if ($request->hasFile('video')) {
+        $videoFile = $request->file('video') ?? $request->file('video_path');
+        if ($videoFile) {
             if ($info->video_path) {
                 Storage::disk('public')->delete($info->video_path);
             }
-            $data['video_path'] = $request->file('video')
-                ->store('general_videos', 'public');
+            $data['video_path'] = $videoFile->store('general_videos', 'public');
+
         }
 
         $info->update($data);
