@@ -29,7 +29,7 @@ class GeneralInfo extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image_path
-            ? url("storage/{$this->image_path}")
+            ? \Illuminate\Support\Facades\Storage::url($this->image_path)
             : null;
     }
 
@@ -39,7 +39,7 @@ class GeneralInfo extends Model
     public function getVideoUrlAttribute(): ?string
     {
         return $this->video_path
-            ? url("storage/{$this->video_path}")
+            ? \Illuminate\Support\Facades\Storage::url($this->video_path)
             : null;
     }
 }
