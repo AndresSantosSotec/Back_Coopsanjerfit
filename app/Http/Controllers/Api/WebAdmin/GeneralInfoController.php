@@ -17,6 +17,7 @@ class GeneralInfoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+
             'title'       => 'required|string',
             'content'     => 'required|string',
             'category'    => 'nullable|string',
@@ -24,9 +25,11 @@ class GeneralInfoController extends Controller
             'image_path'  => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
             'video'       => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
             'video_path'  => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
         ]);
 
         $data = collect($validated)->only(['title', 'content', 'category'])->all();
+
 
         $imageFile = $request->file('image') ?? $request->file('image_path');
         if ($imageFile) {
@@ -36,6 +39,7 @@ class GeneralInfoController extends Controller
         $videoFile = $request->file('video') ?? $request->file('video_path');
         if ($videoFile) {
             $data['video_path'] = $videoFile->store('general_videos', 'public');
+
         }
 
         $info = GeneralInfo::create($data);
@@ -51,6 +55,7 @@ class GeneralInfoController extends Controller
     public function update(Request $request, GeneralInfo $info)
     {
         $validated = $request->validate([
+
             'title'       => 'sometimes|required|string',
             'content'     => 'sometimes|required|string',
             'category'    => 'nullable|string',
@@ -58,9 +63,11 @@ class GeneralInfoController extends Controller
             'image_path'  => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
             'video'       => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
             'video_path'  => 'sometimes|file|mimes:mp4,mov,avi,wmv|max:20480',
+
         ]);
 
         $data = collect($validated)->only(['title', 'content', 'category'])->all();
+
 
         $imageFile = $request->file('image') ?? $request->file('image_path');
         if ($imageFile) {
@@ -76,6 +83,7 @@ class GeneralInfoController extends Controller
                 Storage::disk('public')->delete($info->video_path);
             }
             $data['video_path'] = $videoFile->store('general_videos', 'public');
+
         }
 
         $info->update($data);

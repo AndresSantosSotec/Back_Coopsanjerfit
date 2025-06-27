@@ -112,5 +112,6 @@ Route::prefix('app')->group(function () {
         Route::get('notifications', [MobileNotificationController::class, 'index']);
         Route::post('notifications/{id}/read', [MobileNotificationController::class, 'markAsRead']);
         Route::get('info', [GeneralInfoController::class, 'index']);
+
     });
 });

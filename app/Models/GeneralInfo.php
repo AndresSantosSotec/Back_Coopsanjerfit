@@ -1,15 +1,13 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class GeneralInfo extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
+
         'title',
         'content',
         'category',
@@ -40,6 +38,7 @@ class GeneralInfo extends Model
     {
         return $this->video_path
             ? \Illuminate\Support\Facades\Storage::url($this->video_path)
+
             : null;
     }
 }

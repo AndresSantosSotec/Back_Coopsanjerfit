@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\WebAdmin;
 use App\Models\User;
 use App\Notifications\EjercicioReminder;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class NotificationController extends Controller
 {
