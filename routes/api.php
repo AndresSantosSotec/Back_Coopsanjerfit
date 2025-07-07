@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->prefix('webadmin')->group(function () {
     Route::post('logout', [UserController::class, 'logout']);
     Route::get('activities',                  [AdminActivityController::class, 'index']);
     Route::get('users/{user}/activities',     [AdminActivityController::class, 'byUser']);
+    Route::patch('activities/{activity}/validate', [AdminActivityController::class, 'updateValidity']);
     Route::get('stats', [DashboardController::class, 'index']);
 
     // Notifications

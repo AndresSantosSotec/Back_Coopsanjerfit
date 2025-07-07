@@ -22,33 +22,11 @@ class ActivityObserver
         $col = $activity->user->colaborator;
         if (! $col) return;
 
-        $awarded   = 0;
         $level     = $col->nivel_asignado;
         $metaSteps = config("coinfits.levels.{$level}.steps", 0);
         $metaMins  = config("coinfits.levels.{$level}.minutes", 0);
 
-        // Convertir la duración a minutos para la evaluación
-        $durationMinutes = $activity->duration_unit === 'horas'
-            ? $activity->duration * 60
-            : $activity->duration;
-
-        // 1) Cumplió pasos **y** minutos activos?
-        if (
-            $activity->steps >= $metaSteps
-            && $durationMinutes >= $metaMins
-        ) {
-            $awarded += 10;
-        }
-
-        // 2) Evidencia (foto o ubicación)
-        if ($activity->selfie_path || $activity->location_lat) {
-            $awarded += 2;
-        }
-
-        // 3) Superó la meta de pasos
-        if ($activity->steps > $metaSteps) {
-            $awarded += 3;
-        }
+        $awarded = $this->fitcoin->calculateActivityReward($activity, $col);
 
         if ($awarded > 0) {
             $this->fitcoin->award(
