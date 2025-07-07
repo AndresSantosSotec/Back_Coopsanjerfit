@@ -25,6 +25,7 @@ class Activity extends Model
         'notes',
         'location_lat',
         'location_lng',
+        'is_valid',
     ];
 
     /** Estos atributos virtuales se incluirán automáticamente
@@ -41,6 +42,7 @@ class Activity extends Model
         'attachments'   => 'array',
         'location_lat'  => 'decimal:6',
         'location_lng'  => 'decimal:6',
+        'is_valid'      => 'boolean',
     ];
 
     // Relación con usuario
