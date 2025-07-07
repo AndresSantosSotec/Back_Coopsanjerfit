@@ -48,12 +48,19 @@ class FitcoinService
             : $activity->duration;
 
         $awarded = 0;
-        if ($activity->steps >= $metaSteps && $durationMinutes >= $metaMins) {
+
+        // Se otorgan 10 monedas si se cumple al menos una de las metas de
+        // minutos activos o pasos diarios para el nivel del colaborador.
+        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
             $awarded += 10;
         }
+
+        // Evidencia opcional: selfie o ubicación registrada.
         if ($activity->selfie_path || $activity->location_lat) {
             $awarded += 2;
         }
+
+        // Bonificación adicional por superar la meta de pasos.
         if ($activity->steps > $metaSteps) {
             $awarded += 3;
         }
