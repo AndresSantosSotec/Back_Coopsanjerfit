@@ -32,12 +32,21 @@ class ActivityObserver
             ? $activity->duration * 60
             : $activity->duration;
 
-        // 1) Cumplió pasos **y** minutos activos?
-        if (
-            $activity->steps >= $metaSteps
-            && $durationMinutes >= $metaMins
-        ) {
+        // 1) Cumplió pasos o minutos activos?
+        $stepsMet  = $activity->steps >= $metaSteps;
+        $minsMet   = $durationMinutes >= $metaMins;
+
+        if ($stepsMet && $minsMet) {
+            // Ambos criterios se cumplen
             $awarded += 10;
+        } else {
+            // Bono parcial por cumplir solo uno de los criterios
+            if ($stepsMet) {
+                $awarded += 5;
+            }
+            if ($minsMet) {
+                $awarded += 5;
+            }
         }
 
         // 2) Evidencia (foto o ubicación)
