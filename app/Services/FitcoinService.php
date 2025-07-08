@@ -47,29 +47,22 @@ class FitcoinService
             ? $activity->duration * 60
             : $activity->duration;
 
-        $awarded = 0;
 
+        $awarded = 2; // Recompensa base por registrar actividad
 
-        // 1) Meta de actividad cumplida (minutos o pasos)
-
-        // Se otorgan 10 CoinFits cuando el colaborador alcanza la meta de
-        // minutos o la de pasos. Antes se requería cumplir ambas
-        // condiciones lo que provocaba recompensas muy bajas cuando
-        // una de las métricas no estaba disponible (por ejemplo, sin
-        // registro de pasos). Con este ajuste se incentiva la
-        // constancia independientemente del tipo de medición
-        // proporcionada.
-
-        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
-            $awarded += 10;
-        }
-
-        // 2) Evidencia adicional
+        // 1) Evidencia opcional
         if ($activity->selfie_path) {
             $awarded += 2;
         }
+
         if ($activity->location_lat) {
             $awarded += 2;
+        }
+
+
+        // 2) Bono por cumplir meta (minutos o pasos)
+        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
+            $awarded += 3;
         }
 
         // Obtener la cuenta para calcular lo ya ganado hoy
@@ -82,11 +75,12 @@ class FitcoinService
             ->whereDate('created_at', now()->toDateString())
             ->sum('amount');
 
-        // Limitar a 10 CoinFits por día
-        $remaining = 10 - $earnedToday;
+        // Limitar a 13 CoinFits por día (10 base + 3 de bono diario)
+        $remaining = 13 - $earnedToday;
         if ($remaining <= 0) {
             return 0;
         }
+
 
         return min($awarded, $remaining);
     }
