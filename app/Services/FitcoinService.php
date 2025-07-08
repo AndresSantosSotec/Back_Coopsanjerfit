@@ -47,17 +47,37 @@ class FitcoinService
             ? $activity->duration * 60
             : $activity->duration;
 
-        $awarded = 0;
-        if ($activity->steps >= $metaSteps && $durationMinutes >= $metaMins) {
-            $awarded += 10;
-        }
-        if ($activity->selfie_path || $activity->location_lat) {
+        $awarded = 2; // Recompensa base por registrar actividad
+
+        // 1) Evidencia opcional
+        if ($activity->selfie_path) {
             $awarded += 2;
         }
-        if ($activity->steps > $metaSteps) {
+        if ($activity->location_lat) {
+            $awarded += 2;
+        }
+
+        // 2) Bono por cumplir meta (minutos o pasos)
+        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
             $awarded += 3;
         }
 
-        return $awarded;
+        // Obtener la cuenta para calcular lo ya ganado hoy
+        $account = FitcoinAccount::firstOrCreate(
+            ['colaborator_id' => $col->id],
+            ['balance' => 0]
+        );
+
+        $earnedToday = $account->transactions()
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
+
+        // Limitar a 13 CoinFits por día (10 base + 3 de bono diario)
+        $remaining = 13 - $earnedToday;
+        if ($remaining <= 0) {
+            return 0;
+        }
+
+        return min($awarded, $remaining);
     }
 }
