@@ -47,15 +47,18 @@ class FitcoinService
             ? $activity->duration * 60
             : $activity->duration;
 
+
         $awarded = 2; // Recompensa base por registrar actividad
 
         // 1) Evidencia opcional
         if ($activity->selfie_path) {
             $awarded += 2;
         }
+
         if ($activity->location_lat) {
             $awarded += 2;
         }
+
 
         // 2) Bono por cumplir meta (minutos o pasos)
         if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
@@ -77,6 +80,7 @@ class FitcoinService
         if ($remaining <= 0) {
             return 0;
         }
+
 
         return min($awarded, $remaining);
     }
