@@ -72,10 +72,15 @@ class ActivityController extends Controller
         $data = $request->validate(['is_valid' => 'required|boolean']);
 
         $col = $activity->user->colaborator;
-        $tx = null;
+        $awardTx = null;
+        $invalidTx = null;
         if ($col) {
-            $tx = FitcoinTransaction::where('fitcoin_account_id', $col->fitcoinAccount->id ?? 0)
+            $accountId = $col->fitcoinAccount->id ?? 0;
+            $awardTx = FitcoinTransaction::where('fitcoin_account_id', $accountId)
                 ->where('description', "Actividad ID {$activity->id}")
+                ->first();
+            $invalidTx = FitcoinTransaction::where('fitcoin_account_id', $accountId)
+                ->where('description', "Invalidación actividad ID {$activity->id}")
                 ->first();
         }
 
@@ -84,8 +89,8 @@ class ActivityController extends Controller
             $activity->is_valid = false;
             $activity->save();
 
-            if ($col && $tx) {
-                $this->fitcoin->award($col, -$tx->amount, "Invalidación actividad ID {$activity->id}");
+            if ($col && $awardTx && ! $invalidTx) {
+                $this->fitcoin->award($col, -$awardTx->amount, "Invalidación actividad ID {$activity->id}");
             }
         }
 
@@ -94,10 +99,17 @@ class ActivityController extends Controller
             $activity->is_valid = true;
             $activity->save();
 
-            if ($col && ! $tx) {
-                $amount = $this->fitcoin->calculateActivityReward($activity, $col);
-                if ($amount > 0) {
-                    $this->fitcoin->award($col, $amount, "Actividad ID {$activity->id}");
+            if ($col) {
+                if ($invalidTx) {
+                    $this->fitcoin->award($col, -$invalidTx->amount, "Revalidación actividad ID {$activity->id}");
+                    $invalidTx->delete();
+                }
+
+                if (! $awardTx) {
+                    $amount = $this->fitcoin->calculateActivityReward($activity, $col);
+                    if ($amount > 0) {
+                        $this->fitcoin->award($col, $amount, "Actividad ID {$activity->id}");
+                    }
                 }
             }
         }

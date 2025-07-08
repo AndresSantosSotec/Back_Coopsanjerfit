@@ -48,7 +48,14 @@ class FitcoinService
             : $activity->duration;
 
         $awarded = 0;
-        if ($activity->steps >= $metaSteps && $durationMinutes >= $metaMins) {
+        // Se otorgan 10 CoinFits cuando el colaborador alcanza la meta de
+        // minutos o la de pasos. Antes se requería cumplir ambas
+        // condiciones lo que provocaba recompensas muy bajas cuando
+        // una de las métricas no estaba disponible (por ejemplo, sin
+        // registro de pasos). Con este ajuste se incentiva la
+        // constancia independientemente del tipo de medición
+        // proporcionada.
+        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
             $awarded += 10;
         }
         if ($activity->selfie_path || $activity->location_lat) {
