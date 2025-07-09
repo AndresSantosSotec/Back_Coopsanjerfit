@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\Activity;
 use App\Services\FitcoinService;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Carbon;
 use App\Models\FitcoinTransaction;
 
@@ -22,9 +21,9 @@ class ActivityObserver
         $col = $activity->user->colaborator;
         if (! $col) return;
 
-        $level     = $col->nivel_asignado;
-        $metaSteps = config("coinfits.levels.{$level}.steps", 0);
-        $metaMins  = config("coinfits.levels.{$level}.minutes", 0);
+        $meta = $this->fitcoin->getLevelMeta($col->nivel_asignado);
+        $metaSteps = $meta['steps'];
+        $metaMins  = $meta['minutes'];
 
         $awarded = $this->fitcoin->calculateActivityReward($activity, $col);
 

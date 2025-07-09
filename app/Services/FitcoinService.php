@@ -35,34 +35,70 @@ class FitcoinService
     }
 
     /**
+     * Obtiene la configuración de metas para un nivel, normalizando el nombre.
+     */
+    public function getLevelMeta(string $level): array
+    {
+        $key = $this->canonicalLevel($level);
+        return config("coinfits.levels.$key", ['steps' => 0, 'minutes' => 0]);
+    }
+
+    /**
+     * Convierte un nombre de nivel en su clave normalizada.
+     */
+    protected function canonicalLevel(string $level): string
+    {
+        $slug = strtr(mb_strtolower(trim($level)), [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ñ' => 'n',
+        ]);
+        $slug = str_replace([' ', '-'], '', $slug);
+
+        $map = [
+            'koala'     => 'KoalaFit',
+            'koalafit'  => 'KoalaFit',
+            'jaguar'    => 'JaguarFit',
+            'jaguarfit' => 'JaguarFit',
+            'halcon'    => 'HalconFit',
+            'halconfit' => 'HalconFit',
+        ];
+
+        return $map[$slug] ?? $level;
+    }
+
+    /**
      * Calcula la recompensa que corresponde a una actividad para el colaborador.
      */
     public function calculateActivityReward(Activity $activity, Colaborator $col): int
     {
-        $level     = $col->nivel_asignado;
-        $metaSteps = config("coinfits.levels.{$level}.steps", 0);
-        $metaMins  = config("coinfits.levels.{$level}.minutes", 0);
+        $meta      = $this->getLevelMeta($col->nivel_asignado);
+        $metaSteps = $meta['steps'];
+        $metaMins  = $meta['minutes'];
 
         $durationMinutes = $activity->duration_unit === 'horas'
             ? $activity->duration * 60
             : $activity->duration;
 
 
-        $awarded = 2; // Recompensa base por registrar actividad
+        if ($durationMinutes < 10) {
+            // Actividades cortas otorgan solo una moneda
+            $awarded = 1;
+        } else {
+            $awarded = 2; // Recompensa base por registrar actividad
 
-        // 1) Evidencia opcional
-        if ($activity->selfie_path) {
-            $awarded += 2;
-        }
+            // 1) Evidencia opcional
+            if ($activity->selfie_path) {
+                $awarded += 2;
+            }
 
-        if ($activity->location_lat) {
-            $awarded += 2;
-        }
+            if ($activity->location_lat) {
+                $awarded += 2;
+            }
 
-
-        // 2) Bono por cumplir meta (minutos o pasos)
-        if ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps) {
-            $awarded += 3;
+            // 2) Bono por cumplir meta (minutos o pasos)
+            if (($metaSteps > 0 || $metaMins > 0) &&
+                ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps)) {
+                $awarded += 3;
+            }
         }
 
         // Obtener la cuenta para calcular lo ya ganado hoy
@@ -75,8 +111,9 @@ class FitcoinService
             ->whereDate('created_at', now()->toDateString())
             ->sum('amount');
 
-        // Limitar a 13 CoinFits por día (10 base + 3 de bono diario)
-        $remaining = 13 - $earnedToday;
+        // Limitar las recompensas diarias según configuración
+        $dailyLimit = config('coinfits.daily_limit', 10);
+        $remaining  = $dailyLimit - $earnedToday;
         if ($remaining <= 0) {
             return 0;
         }
