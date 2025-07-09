@@ -94,11 +94,13 @@ class FitcoinService
                 $awarded += 2;
             }
 
+
             // 2) Bono por cumplir meta (minutos o pasos)
             if (($metaSteps > 0 || $metaMins > 0) &&
                 ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps)) {
                 $awarded += 3;
             }
+
         }
 
         // Obtener la cuenta para calcular lo ya ganado hoy
