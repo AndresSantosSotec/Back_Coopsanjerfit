@@ -79,22 +79,28 @@ class FitcoinService
             : $activity->duration;
 
 
-        $awarded = 2; // Recompensa base por registrar actividad
+        if ($durationMinutes < 10) {
+            // Actividades cortas otorgan solo una moneda
+            $awarded = 1;
+        } else {
+            $awarded = 2; // Recompensa base por registrar actividad
 
-        // 1) Evidencia opcional
-        if ($activity->selfie_path) {
-            $awarded += 2;
-        }
+            // 1) Evidencia opcional
+            if ($activity->selfie_path) {
+                $awarded += 2;
+            }
 
-        if ($activity->location_lat) {
-            $awarded += 2;
-        }
+            if ($activity->location_lat) {
+                $awarded += 2;
+            }
 
 
-        // 2) Bono por cumplir meta (minutos o pasos)
-        if (($metaSteps > 0 || $metaMins > 0) &&
-            ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps)) {
-            $awarded += 3;
+            // 2) Bono por cumplir meta (minutos o pasos)
+            if (($metaSteps > 0 || $metaMins > 0) &&
+                ($durationMinutes >= $metaMins || $activity->steps >= $metaSteps)) {
+                $awarded += 3;
+            }
+
         }
 
         // Obtener la cuenta para calcular lo ya ganado hoy

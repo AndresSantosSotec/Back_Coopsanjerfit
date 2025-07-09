@@ -27,7 +27,10 @@ class FitcoinServiceTest extends TestCase
         ]);
 
         $reward = $service->calculateActivityReward($activity, $colaborator);
-        $this->assertEquals(6, $reward);
+
+        $this->assertEquals(1, $reward);
+
+      
 
         // Award the user to almost reach the limit
         $service->award($colaborator, 9, 'setup');
@@ -60,8 +63,10 @@ class FitcoinServiceTest extends TestCase
             'location_lat' => 1.0,
         ]);
 
-        // Meta no cumplida, debería otorgar sólo 6
+
+        // Meta no cumplida, debería otorgar sólo 1 por ser actividad corta
         $reward = $service->calculateActivityReward($activity, $col);
-        $this->assertEquals(6, $reward);
+        $this->assertEquals(1, $reward);
+
     }
 }
