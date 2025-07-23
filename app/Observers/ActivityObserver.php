@@ -66,5 +66,30 @@ class ActivityObserver
                 $this->fitcoin->award($col, 10, $bonusDesc);
             }
         }
+
+        // 5) Bono por racha de 5 días consecutivos
+        $account = $col->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+
+        $lastDate = $account->last_activity_date
+            ? Carbon::parse($account->last_activity_date)
+            : null;
+
+        if (! $lastDate || !$lastDate->isToday()) {
+            if ($lastDate && $lastDate->isYesterday()) {
+                $account->streak_count += 1;
+            } else {
+                $account->streak_count = 1;
+            }
+
+            $account->last_activity_date = Carbon::today();
+
+            if ($account->streak_count >= 5) {
+                $bonusDesc = 'Bono racha ' . Carbon::today()->toDateString();
+                $this->fitcoin->award($col, 10, $bonusDesc);
+                $account->streak_count = 0;
+            }
+
+            $account->save();
+        }
     }
 }
