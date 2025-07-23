@@ -68,7 +68,7 @@ class ActivityObserver
         }
 
         // 5) Bono por racha de 5 días consecutivos
-        $account = $col->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+        $account = $col->fitcoinAccount()->firstOrCreate([], ['balance' => 0]);
 
         $lastDate = $account->last_activity_date
             ? Carbon::parse($account->last_activity_date)

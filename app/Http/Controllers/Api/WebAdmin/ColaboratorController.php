@@ -96,7 +96,7 @@ class ColaboratorController extends Controller
         $colaborator = Colaborator::create($colData);
 
         /* 3) Crear cuenta de Fitcoins con balance 0 (si no existe) */
-        $colaborator->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+        $colaborator->fitcoinAccount()->firstOrCreate([], ['balance' => 0]);
 
         // Cargamos relaciones para la respuesta
         $colaborator->load(['user', 'fitcoinAccount']);
@@ -165,7 +165,7 @@ class ColaboratorController extends Controller
         $colaborator->update($data);
 
         // Aseguramos que siempre exista cuenta de fitcoins
-        $colaborator->fitcoinAccount()->firstOrCreate(['balance' => 0]);
+        $colaborator->fitcoinAccount()->firstOrCreate([], ['balance' => 0]);
 
         $colaborator->load(['user', 'fitcoinAccount']);
 
