@@ -10,6 +10,8 @@ class FitcoinAccount extends Model
     protected $fillable = [
         'colaborator_id',
         'balance',
+        'streak_count',
+        'last_activity_date',
     ];
 
     /**
